@@ -5,7 +5,7 @@ import { FetchFilteredResponses, Question } from '../models/FetchFilteredRespons
 
 export class FormResponsesService {
     static async fetchFilteredResponses(formId: string, filters: FilterClauseType[]): Promise<FetchFilteredResponses['responses']> {
-        const response = await axios.get<FetchFilteredResponses>(`${config.fillout.baseUrl}/${formId}/responses`, {
+        const response = await axios.get<FetchFilteredResponses>(`${config.fillout.baseUrl}/${formId}/submissions`, {
             headers: { 'Authorization': `Bearer ${config.fillout.apiKey}` },
         });
 
