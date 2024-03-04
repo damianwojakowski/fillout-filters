@@ -2,11 +2,13 @@ import axios from 'axios';
 import { config } from '../config';
 import { FilterClauseType } from '../models/FilterClauseType';
 import { FetchFilteredResponses, Question } from '../models/FetchFilteredResponses';
+import { APIQueryParams } from '../models/ApiQueryParams';
 
 export class FormResponsesService {
-    static async fetchFilteredResponses(formId: string, filters: FilterClauseType[]): Promise<FetchFilteredResponses['responses']> {
+    static async fetchFilteredResponses(formId: string, queryParams: APIQueryParams, filters: FilterClauseType[]): Promise<FetchFilteredResponses> {
         const response = await axios.get<FetchFilteredResponses>(`${config.fillout.baseUrl}/${formId}/submissions`, {
             headers: { 'Authorization': `Bearer ${config.fillout.apiKey}` },
+            params: queryParams
         });
 
         const filteredResponses = response.data.responses.filter(response =>
@@ -15,7 +17,11 @@ export class FormResponsesService {
             )
         );
 
-        return filteredResponses;
+        return {
+            responses: filteredResponses,
+            pageCount: response.data.pageCount,
+            totalResponses: response.data.totalResponses
+        };
     }
 
     public static matchesFilter(question: Question, filter: FilterClauseType): boolean {
@@ -31,8 +37,8 @@ export class FormResponsesService {
         }
 
         switch (filter.condition) {
-            case 'equals': return question.value.toString() === filter.value.toString();
-            case 'does_not_equal': return question.value.toString() !== filter.value.toString();
+            case 'equals': return question.value === filter.value
+            case 'does_not_equal': return question.value != filter.value;
             case 'greater_than': return typeof question.value === 'number' && question.value > Number(filter.value);
             case 'less_than': return typeof question.value === 'number' && question.value < Number(filter.value);
             default: return false;
