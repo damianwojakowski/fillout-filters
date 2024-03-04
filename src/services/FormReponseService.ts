@@ -37,8 +37,8 @@ export class FormResponsesService {
 
         return {
             responses: paginatedResponses,
-            pageCount: pageCount,
-            totalResponses: totalResponses
+            totalResponses: totalResponses,
+            pageCount: pageCount
         };
     }
 
