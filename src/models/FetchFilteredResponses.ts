@@ -8,7 +8,7 @@ export interface Question {
 export interface FormResponse {
   questions: Question[];
   submissionId: string;
-  submissionTime: string; // ISO 8601 date string.
+  submissionTime: string;
 }
 
 export interface FetchFilteredResponses {

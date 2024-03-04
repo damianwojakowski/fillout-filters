@@ -1,27 +1,52 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { config } from '../config';
 import { FilterClauseType } from '../models/FilterClauseType';
-import { FetchFilteredResponses, Question } from '../models/FetchFilteredResponses';
+import { FetchFilteredResponses, Question, FormResponse } from '../models/FetchFilteredResponses';
 import { APIQueryParams } from '../models/ApiQueryParams';
 
 export class FormResponsesService {
     static async fetchFilteredResponses(formId: string, queryParams: APIQueryParams, filters: FilterClauseType[]): Promise<FetchFilteredResponses> {
-        const response = await axios.get<FetchFilteredResponses>(`${config.fillout.baseUrl}/${formId}/submissions`, {
+        if (this.areFiltersEmpty(filters)) {
+            return (await this.getResponsesFromFilloutApi(formId, queryParams)).data;
+        }
+
+        queryParams.limit = 150;
+        const response: AxiosResponse<FetchFilteredResponses, any> = await this.getResponsesFromFilloutApi(formId, queryParams);
+        const filteredResponses = FormResponsesService.filterResponses(response, filters);
+
+        return this.createResponseWithFilters(queryParams, filteredResponses);
+    }
+
+    private static areFiltersEmpty(filters: FilterClauseType[]) {
+        return (!filters || filters.length === 0);
+    }
+
+    private static filterResponses(response: AxiosResponse<FetchFilteredResponses, any>, filters: FilterClauseType[]) {
+        return response.data.responses.filter(
+            response => filters.every(
+                filter => response.questions.some(question => this.matchesFilter(question, filter))
+            ));
+    }
+
+    private static createResponseWithFilters(queryParams: APIQueryParams, filteredResponses: FormResponse[]) {
+        const pageSize = queryParams.limit ? queryParams.limit : 150;
+        const offset = queryParams.offset ? queryParams.offset : 0;
+        const paginatedResponses = filteredResponses.slice(offset, offset + pageSize);
+        const totalResponses = filteredResponses.length;
+        const pageCount = Math.ceil(totalResponses / pageSize);
+
+        return {
+            responses: paginatedResponses,
+            pageCount: pageCount,
+            totalResponses: totalResponses
+        };
+    }
+
+    private static async getResponsesFromFilloutApi(formId: string, queryParams: APIQueryParams) {
+        return await axios.get<FetchFilteredResponses>(`${config.fillout.baseUrl}/${formId}/submissions`, {
             headers: { 'Authorization': `Bearer ${config.fillout.apiKey}` },
             params: queryParams
         });
-
-        const filteredResponses = response.data.responses.filter(response =>
-            filters.every(filter =>
-                response.questions.some(question => this.matchesFilter(question, filter))
-            )
-        );
-
-        return {
-            responses: filteredResponses,
-            pageCount: response.data.pageCount,
-            totalResponses: response.data.totalResponses
-        };
     }
 
     public static matchesFilter(question: Question, filter: FilterClauseType): boolean {
