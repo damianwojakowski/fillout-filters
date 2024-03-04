@@ -1,4 +1,4 @@
-export interface APIQueryParams {
+export interface ApiQueryParams {
   limit?: number;
   offset?: number;
   afterDate?: string;

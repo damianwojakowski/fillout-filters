@@ -1,4 +1,4 @@
-import { APIQueryParams } from "../models/ApiQueryParams";
+import { ApiQueryParams } from "../models/ApiQueryParams";
 import { FilterClauseType } from "../models/FilterClauseType";
 import { Request } from 'express';
 
@@ -10,7 +10,7 @@ export class FormReponseUtility {
         return nonEmptyFilters;
     }
 
-    public static getQueryParameters(req: Request): APIQueryParams {
+    public static getQueryParameters(req: Request): ApiQueryParams {
         return {
             limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
             offset: req.query.offset ? parseInt(req.query.offset as string) : undefined,

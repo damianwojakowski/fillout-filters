@@ -2,10 +2,10 @@ import axios, { AxiosResponse } from 'axios';
 import { config } from '../config';
 import { FilterClauseType } from '../models/FilterClauseType';
 import { FetchFilteredResponses, Question, FormResponse } from '../models/FetchFilteredResponses';
-import { APIQueryParams } from '../models/ApiQueryParams';
+import { ApiQueryParams } from '../models/ApiQueryParams';
 
 export class FormResponsesService {
-    static async fetchFilteredResponses(formId: string, queryParams: APIQueryParams, filters: FilterClauseType[]): Promise<FetchFilteredResponses> {
+    static async fetchFilteredResponses(formId: string, queryParams: ApiQueryParams, filters: FilterClauseType[]): Promise<FetchFilteredResponses> {
         if (this.areFiltersEmpty(filters)) {
             return (await this.getResponsesFromFilloutApi(formId, queryParams)).data;
         }
@@ -28,7 +28,7 @@ export class FormResponsesService {
             ));
     }
 
-    private static createResponseWithFilters(queryParams: APIQueryParams, filteredResponses: FormResponse[]) {
+    private static createResponseWithFilters(queryParams: ApiQueryParams, filteredResponses: FormResponse[]) {
         const pageSize = queryParams.limit ? queryParams.limit : 150;
         const offset = queryParams.offset ? queryParams.offset : 0;
         const paginatedResponses = filteredResponses.slice(offset, offset + pageSize);
@@ -42,7 +42,7 @@ export class FormResponsesService {
         };
     }
 
-    private static async getResponsesFromFilloutApi(formId: string, queryParams: APIQueryParams) {
+    private static async getResponsesFromFilloutApi(formId: string, queryParams: ApiQueryParams) {
         return await axios.get<FetchFilteredResponses>(`${config.fillout.baseUrl}/${formId}/submissions`, {
             headers: { 'Authorization': `Bearer ${config.fillout.apiKey}` },
             params: queryParams
