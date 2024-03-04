@@ -13,7 +13,7 @@ export class FormResponsesController {
             res.json({
                 responses: filteredResponses,
                 totalResponses: filteredResponses.length,
-                // Implement pagination logic here if necessary
+                pageCount: 10
             });
         } catch (error) {
             console.error(error);
